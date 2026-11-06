@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #e8ded4;
+  --color-foreground: #182530;
+  --color-chalk: #f5f0e8;
+  --font-sans: var(--font-inter-tight), Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background: var(--color-chalk);
+    color: var(--color-foreground);
+  }
+
+  a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 0.25rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+@layer components {
+  .lobes {
+    --lobe-radius: clamp(3.75rem, 19vw, 16rem);
+    --lobe-overlap: calc(var(--lobe-radius) * 0.14);
+    /* Room for the painted edge to push outward without leaving the cover. */
+    --paint-bleed: 1rem;
+    /* Wider than the column so the scan streak on the texture's left edge is cropped out. */
+    --texture-tile-width: clamp(60rem, 104vw, 88rem);
+    position: relative;
+    isolation: isolate;
+    width: min(94vw, 80rem);
+    margin: clamp(0.75rem, 3vw, 2.5rem) auto;
+  }
+
+  .lobes__filters {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  .lobes__paint {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    isolation: isolate;
+    pointer-events: none;
+  }
+
+  .lobes__texture {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Average color of the texture: shown while tiles load and below the last tile. */
+    background-color: var(--color-foreground);
+  }
+
+  .lobes__tile {
+    flex: none;
+    width: var(--texture-tile-width);
+    max-width: none;
+    height: auto;
+  }
+
+  .lobes__tile--mirrored {
+    transform: scaleY(-1);
+  }
+
+  /* Cream hides the texture and black reveals it, so all pills share one continuous texture
+     and the overlaps between pills leave no seam. */
+  .lobes__shapes {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-auto-rows: minmax(0, 1fr);
+    background-color: var(--color-background);
+    mix-blend-mode: lighten;
+  }
+
+  .lobes__shape {
+    margin: calc(var(--lobe-overlap) / -2) var(--paint-bleed);
+    border-radius: var(--lobe-radius);
+    background-color: #000;
+  }
+
+  .lobes__shape:first-child {
+    margin-top: var(--paint-bleed);
+  }
+
+  .lobes__shape:last-child {
+    margin-bottom: var(--paint-bleed);
+  }
+
+  /* Equal rows keep the pills, laid out in .lobes__shapes, aligned with the sections. */
+  .lobes__content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-auto-rows: 1fr;
+  }
+
+  .lobe {
+    display: grid;
+    min-height: calc(var(--lobe-radius) * 2.3);
+    padding: calc(var(--lobe-radius) * 0.55) max(calc(var(--lobe-radius) * 0.5), 2.5rem);
+    color: var(--color-chalk);
+  }
+
+  .type-title {
+    font-size: clamp(2.75rem, 5.6vw, 4.5rem);
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+
+  .type-statement {
+    font-size: clamp(1.75rem, 3.6vw, 3rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .type-lead {
+    font-size: clamp(1.375rem, 2.6vw, 2.125rem);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .type-body {
+    font-size: clamp(0.9375rem, 1.25vw, 1.0625rem);
+    font-weight: 400;
+    line-height: 1.45;
+  }
+
+  .type-label {
+    font-size: clamp(0.6875rem, 0.95vw, 0.8125rem);
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Vertical labels read top to bottom and stack right to left, as on the poster. */
+  .index {
+    display: grid;
+    row-gap: 1.75rem;
+    writing-mode: vertical-rl;
+  }
+
+  .link-underline {
+    text-underline-offset: 0.35em;
+  }
+
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    text-decoration: underline;
+  }
+
+  .logo {
+    display: grid;
+    place-items: center;
+    width: 4rem;
+    aspect-ratio: 1;
+    background-color: var(--color-chalk);
+    color: var(--color-foreground);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lobes__paint {
+      animation: paint-in 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .lobes__shape {
+      animation: shape-settle 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+  }
+}
+
+@keyframes paint-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes shape-settle {
+  from {
+    transform: scale(0.94);
+  }
+}
