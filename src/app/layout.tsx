@@ -4,13 +4,13 @@ import "./globals.css";
 
 const interTight = Inter_Tight({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500"],
   variable: "--font-inter-tight",
 });
 
 export const metadata: Metadata = {
-  title: "Nav",
-  description: "Estudio creativo. Ideas que dejan huella.",
+  title: "Still",
+  description: "A short reflection on the marks we leave.",
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" data-scroll-behavior="smooth" className={interTight.variable}>
+    <html lang="en" className={interTight.variable}>
       <body>{children}</body>
     </html>
   );

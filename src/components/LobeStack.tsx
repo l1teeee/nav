@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Children, type ReactNode } from "react";
 import paperTexture from "@/assets/texturelabs-paper-292.jpg";
+import InkEdgeFilter from "@/components/InkEdgeFilter";
 import PaintEdgeFilter from "@/components/PaintEdgeFilter";
 
 type LobeStackProps = {
@@ -13,7 +14,7 @@ const TEXTURE_TILE_COUNT = 6;
 // Declared smaller than the rendered tile on purpose, so high-DPR screens stop at the 1920w variant; the texture is soft and upscaling does not show.
 const TEXTURE_SIZES = "(max-width: 48rem) 640px, 960px";
 
-const SHAPE_STAGGER_MS = 120;
+const INK_EDGE_FILTER_ID = "ink-edge";
 
 function paintEdgeFilterId(lobeIndex: number): string {
   return `paint-edge-${lobeIndex}`;
@@ -35,6 +36,7 @@ export default function LobeStack({ children }: LobeStackProps) {
               seed={lobeIndex}
             />
           ))}
+          <InkEdgeFilter id={INK_EDGE_FILTER_ID} />
         </defs>
       </svg>
       <div className="lobes__paint" aria-hidden="true">
@@ -57,15 +59,17 @@ export default function LobeStack({ children }: LobeStackProps) {
             <div
               key={lobeIndex}
               className="lobes__shape"
-              style={{
-                filter: `url(#${paintEdgeFilterId(lobeIndex)})`,
-                animationDelay: `${lobeIndex * SHAPE_STAGGER_MS}ms`,
-              }}
+              style={{ filter: `url(#${paintEdgeFilterId(lobeIndex)})` }}
             />
           ))}
         </div>
       </div>
-      <div className="lobes__content">{children}</div>
+      {/* Inline for the same reason as the shapes' filter. */}
+      <div className="lobes__content" style={{ filter: `url(#${INK_EDGE_FILTER_ID})` }}>
+        {Children.map(children, (child) => (
+          <div className="lobes__slot">{child}</div>
+        ))}
+      </div>
     </div>
   );
 }
