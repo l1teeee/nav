@@ -16,26 +16,33 @@ const TEXTURE_SIZES = "(max-width: 48rem) 640px, 960px";
 
 const INK_EDGE_FILTER_ID = "ink-edge";
 
-function paintEdgeFilterId(lobeIndex: number): string {
-  return `paint-edge-${lobeIndex}`;
+// Every pill is painted this many times with different edge noise and one copy shows at a time; the boil-frame keyframes in globals.css show each copy for a quarter of the loop, so change both together.
+const BOIL_FRAME_COUNT = 4;
+
+function paintEdgeFilterId(lobeIndex: number, frameIndex: number): string {
+  return `paint-edge-${lobeIndex}-${frameIndex}`;
 }
 
 export default function LobeStack({ children }: LobeStackProps) {
   const lobeCount = Children.count(children);
   const lobeIndexes = Array.from({ length: lobeCount }, (_, lobeIndex) => lobeIndex);
+  const frameIndexes = Array.from({ length: BOIL_FRAME_COUNT }, (_, frameIndex) => frameIndex);
   const tileIndexes = Array.from({ length: TEXTURE_TILE_COUNT }, (_, tileIndex) => tileIndex);
 
   return (
     <div className="lobes">
       <svg className="lobes__filters" width="0" height="0" aria-hidden="true" focusable="false">
         <defs>
-          {lobeIndexes.map((lobeIndex) => (
-            <PaintEdgeFilter
-              key={lobeIndex}
-              id={paintEdgeFilterId(lobeIndex)}
-              seed={lobeIndex}
-            />
-          ))}
+          {lobeIndexes.flatMap((lobeIndex) =>
+            frameIndexes.map((frameIndex) => (
+              <PaintEdgeFilter
+                key={paintEdgeFilterId(lobeIndex, frameIndex)}
+                id={paintEdgeFilterId(lobeIndex, frameIndex)}
+                seed={lobeIndex}
+                frame={frameIndex}
+              />
+            )),
+          )}
           <InkEdgeFilter id={INK_EDGE_FILTER_ID} />
         </defs>
       </svg>
@@ -56,11 +63,18 @@ export default function LobeStack({ children }: LobeStackProps) {
         <div className="lobes__shapes">
           {/* The filter goes in the inline style, not in CSS, so the fragment URL always resolves against the document. */}
           {lobeIndexes.map((lobeIndex) => (
-            <div
-              key={lobeIndex}
-              className="lobes__shape"
-              style={{ filter: `url(#${paintEdgeFilterId(lobeIndex)})` }}
-            />
+            <div key={lobeIndex} className="lobes__shape">
+              {frameIndexes.map((frameIndex) => (
+                <div
+                  key={frameIndex}
+                  className="lobes__frame"
+                  style={{
+                    filter: `url(#${paintEdgeFilterId(lobeIndex, frameIndex)})`,
+                    animationDelay: `calc(var(--boil-step) * ${frameIndex})`,
+                  }}
+                />
+              ))}
+            </div>
           ))}
         </div>
       </div>

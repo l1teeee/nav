@@ -40,6 +40,8 @@
     --lobe-overlap: calc(var(--lobe-radius) * 0.14);
     /* Room for the painted edge to push outward without leaving the cover. */
     --paint-bleed: 1rem;
+    /* How long each of the four edge drawings stays on screen. */
+    --boil-step: 0.2s;
     /* Wider than the column so the scan streak on the texture's left edge is cropped out. */
     --texture-tile-width: clamp(60rem, 104vw, 88rem);
     position: relative;
@@ -97,9 +99,8 @@
   }
 
   .lobes__shape {
+    position: relative;
     margin: calc(var(--lobe-overlap) / -2) var(--paint-bleed);
-    border-radius: var(--lobe-radius);
-    background-color: #000;
   }
 
   .lobes__shape:first-child {
@@ -108,6 +109,19 @@
 
   .lobes__shape:last-child {
     margin-bottom: var(--paint-bleed);
+  }
+
+  /* Each pill is painted four times with slightly different edge noise and one copy shows at a time,
+     so the outline quivers like a hand-drawn line while its shape stays the same. */
+  .lobes__frame {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--lobe-radius);
+    background-color: #000;
+  }
+
+  .lobes__frame:not(:first-child) {
+    visibility: hidden;
   }
 
   /* Equal rows keep the pills, laid out in .lobes__shapes, aligned with the sections. */
@@ -144,13 +158,16 @@
     color: var(--color-chalk);
   }
 
-  /* The outer pills stop one bleed short of the stack edge, so their outer side needs that much more room. */
+  /* The outer pills stop one bleed short of the stack edge. Their outer text sits as far from that edge as the
+     text sits from the sides, and the opposite padding grows by the same amount so centered text stays put. */
   .lobes__slot:first-child > .lobe {
-    padding-top: calc(var(--lobe-pad-block) + var(--paint-bleed));
+    padding-top: var(--lobe-pad-inline);
+    padding-bottom: calc(var(--lobe-pad-inline) - var(--paint-bleed));
   }
 
   .lobes__slot:last-child > .lobe {
-    padding-bottom: calc(var(--lobe-pad-block) + var(--paint-bleed));
+    padding-top: calc(var(--lobe-pad-inline) - var(--paint-bleed));
+    padding-bottom: var(--lobe-pad-inline);
   }
 
   .type-title {
@@ -174,6 +191,14 @@
     letter-spacing: -0.01em;
   }
 
+  /* A copy shows for one step of the loop and stays hidden for the other three. Under reduced motion
+     this rule does not apply, so only the first copy shows and the edges stay still. */
+  @media (prefers-reduced-motion: no-preference) {
+    .lobes__frame {
+      animation: boil-frame calc(var(--boil-step) * 4) step-end infinite;
+    }
+  }
+
   /* One animation for the whole poster, so the paint and the text arrive together. */
   @media (prefers-reduced-motion: no-preference) {
     .lobes {
@@ -186,5 +211,14 @@
   from {
     opacity: 0;
     transform: scale(0.97);
+  }
+}
+
+@keyframes boil-frame {
+  0% {
+    visibility: visible;
+  }
+  25% {
+    visibility: hidden;
   }
 }

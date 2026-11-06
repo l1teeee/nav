@@ -1,10 +1,11 @@
 type PaintEdgeFilterProps = {
   id: string;
   seed: number;
+  frame: number;
 };
 
-export default function PaintEdgeFilter({ id, seed }: PaintEdgeFilterProps) {
-  // Two passes: a slow wobble makes the outline look hand-painted; a fine grit frays it like a dry brush.
+export default function PaintEdgeFilter({ id, seed, frame }: PaintEdgeFilterProps) {
+  // Three passes: a slow wobble makes the outline look hand-painted; a fine grit frays it like a dry brush; a small last shift, different in every frame, makes the finished edge quiver. Frames of one lobe share the first two seeds, so only that last shift changes between them.
   return (
     <filter
       id={id}
@@ -40,6 +41,21 @@ export default function PaintEdgeFilter({ id, seed }: PaintEdgeFilterProps) {
         in="wobbled"
         in2="grit"
         scale={12}
+        xChannelSelector="R"
+        yChannelSelector="G"
+        result="gritted"
+      />
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.03"
+        numOctaves={2}
+        seed={7 + seed * 13 + frame * 29}
+        result="boil"
+      />
+      <feDisplacementMap
+        in="gritted"
+        in2="boil"
+        scale={5}
         xChannelSelector="R"
         yChannelSelector="G"
       />
